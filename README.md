@@ -1,5 +1,61 @@
 # CORPUS SHREDDER (Max / FluCoMa)
 
+[English](#english) | [日本語](#日本語)
+
+---
+
+## English
+
+A corpus (concatenative) system reproducing the core of SOUND SHREDDER in Max + FluCoMa.
+Slice a sound → features → a 2D timbre map → click to audition. Adds **k-means cluster coloring** on top.
+
+### Files
+- `corpus_shredder.maxpat` … the main patch (based on FluCoMa's official corpus-explorer, with k-means coloring + a presentation UI added).
+- `build_corpus_shredder.py` … the script that generates it (injects the coloring layer + lays out Presentation Mode in one pass).
+- `inject_kmeans.py` … old version (coloring only; now merged into the build script).
+- `maxctl.py` … (reference) a client that sends commands directly to the Max MCP socket.io server.
+
+### Presentation mode
+It launches in **Presentation Mode** automatically, showing just the control UI (Cmd+E, or the bottom-right icon, to enter patching mode).
+- Left column: ① AUDIO ON (ezdac~) / ② ANALYZE (bang) / CLUSTERS (k) / GAIN / folder drop.
+- Center–right: the 2D timbre map (color = k-means cluster). Click & drag to audition nearby slices.
+
+### Requirements
+- Max 8 or 9.
+- The **FluCoMa** (Fluid Corpus Manipulation) package … installed.
+- Bundled sounds like `Nicol-LoopE-M.wav` are found automatically from FluCoMa's media folder (search path).
+
+### Usage
+1. Open `corpus_shredder.maxpat` in Max.
+2. Turn on **audio on** (①, bottom-right).
+3. Click **click here** (③, the bang, top-left) → slice → MFCC features → normalize → UMAP 2D → point cloud in the plotter.
+   - At the same time **k-means runs and auto-colors the points per cluster** (visualizing kick/snare/hat-like grouping).
+4. **Click & drag** the plotter (④) → audition nearby slices (kdtree → play~).
+5. To change the cluster count → the right-side **number box → `numclusters $1`** (applied on the next click here).
+6. For another sound → drop a folder onto "Drag a folder containing valid AIFF/WAV files here", or swap the `buffer~ sound` filename (e.g. `Tremblay-BeatRemember.wav` for drums).
+
+### Pipeline
+| Function | FluCoMa |
+|---|---|
+| Slice | `fluid.bufonsetslice~ @metric 9 @threshold 0.01` |
+| Features | `fluid.bufmfcc~` → `fluid.bufstats~` → `fluid.bufflatten~` → `fluid.dataset~ analysis` |
+| Normalize | `fluid.normalize~` → `fluid.dataset~ normalised` |
+| 2D projection | `fluid.umap~ @numdimensions 2` → `fluid.dataset~ reduction` |
+| Nearest / audition | `fluid.kdtree~` → `play~ sound` |
+| **Coloring (added)** | `fluid.kmeans~ @numclusters 4` → `fitpredict normalised clusters` → `fluid.labelset~ clusters` → plotter 2nd inlet |
+
+### Notes
+- If the Max 9 trial has expired you **can't save** (it still runs). The `.maxpat` in this repo is the master.
+- The coloring layer is injected following the canonical wiring in FluCoMa's plotter help. The base core ①–④ is verified on-device up to the point cloud. **The coloring's rendering is not yet verified on-device** (open and click here to check).
+
+### Not implemented (optional next steps)
+- A beat-generation sequencer (pick slices from clusters, sequence steps).
+- pfft~ spectral-morph integration (see `~/dev/max-spectral-morph`).
+
+---
+
+## 日本語
+
 SOUND SHREDDER の中核を Max + FluCoMa で再現したコーパス（concatenative）システム。
 音源をスライス→特徴量→2D音色マップ→クリックで試聴。さらに **k-means クラスタ色分け** を追加。
 
