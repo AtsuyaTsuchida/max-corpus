@@ -1,0 +1,6 @@
+{ "commands": [
+  {"action":"add_object","position":[40,50],"obj_type":"comment","args":["MCP LIVE BUILD OK"],"varname":"c_title"},
+  {"action":"add_object","position":[40,100],"obj_type":"cycle~","args":[440],"varname":"osc1"},
+  {"action":"add_object","position":[40,150],"obj_type":"gain~","args":[],"varname":"g1"},
+  {"action":"connect_objects","src_varname":"osc1","outlet_idx":0,"dst_varname":"g1","inlet_idx":0}
+], "wait":0.8 }
